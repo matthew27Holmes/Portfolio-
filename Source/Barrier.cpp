@@ -23,6 +23,7 @@ void Barrier::Reset()
 	for (int i = 0; i < deadBarriers.size(); i++)
 	{
 		deadBarriers[i] = false;
+		health[i] = 10;
 	}
 }
 bool Barrier::init(std::shared_ptr<ASGE::Renderer> renderer)

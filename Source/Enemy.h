@@ -23,8 +23,6 @@ public:
 	bool getHasEnemyWon();
 	void killSprite(int i);
 	void setEnemyWin(bool hasWon);
-	
-	/*ASGE::Sprite GetSprite(int i);*/
 
 private:
 	std::unique_ptr<ASGE::Sprite> Invaders;
@@ -38,6 +36,7 @@ private:
 	int speed;
 	int howManyEnemiesKilled;
 	int score;
+	char* sprite;
 
 	bool MovingRight;
 	bool HasEnemyWon;

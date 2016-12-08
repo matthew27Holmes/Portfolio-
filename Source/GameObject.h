@@ -11,18 +11,7 @@ class GameObject
 public:
 	GameObject() = default;
 	~GameObject() = default;
-
-	/*float GetXpostion(int i);
-	float GetYpostion(int i);
-	float GetWidth(int i);
-	float Gethight(int i);*/
-
 	bool IsAlive();
-
 private:
 	int Health;
-	/*float Xpos;
-	float Ypos;
-	float Width;
-	float Height;*/
 };

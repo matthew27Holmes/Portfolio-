@@ -1,6 +1,6 @@
 #pragma once
 #include "Enemy.h"
-class EnemyBullet : public Enemy
+class EnemyBullet 
 {
 public:
 	float GetEnemyBulletY();

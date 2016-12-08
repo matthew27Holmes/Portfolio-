@@ -130,7 +130,7 @@ void InvadersGame::updateMenue()
 {
 	beginFrame();
 	renderer->setFont(GameFont::fonts[0]->id);
-	renderer->renderText("SPACE INVADERS\nSTART", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("SPACE INVADERS\n PRESS ENTER TO START", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
 	endFrame();
 }
 void InvadersGame::updateGame()
@@ -169,7 +169,7 @@ void InvadersGame::updateGame()
 				{
 					playerPt->SetHasShot(false);
 					enemyPt->killSprite(i);
-					score = +10;
+					score +=10;
 				}
 			}
 		}
@@ -238,7 +238,8 @@ void InvadersGame::updateGameOver()
 	beginFrame();
 	renderer->setFont(GameFont::fonts[0]->id);
 	renderer->renderText("GAME OVER", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText("PLAY AGAIN", 375, 425, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("PRESS ENTER TO PLAY AGAIN", 375, 425, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("PRESS ESC TO QUIT", 375, 525, 0.5, ASGE::COLOURS::DARKORANGE);
 	endFrame();
 }
 void InvadersGame::updateWin_Screen()
@@ -249,7 +250,9 @@ void InvadersGame::updateWin_Screen()
 	renderer->setFont(GameFont::fonts[0]->id);
 	renderer->renderText("YOU WIN", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
 	renderer->renderText("SCORE", 375, 425, 0.5, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText(scoreChar, 375, 425, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText(scoreChar, 400, 425, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("PRESS ENTER TO PLAY AGAIN", 475, 425, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("PRESS ESC TO QUIT", 575, 525, 0.5, ASGE::COLOURS::DARKORANGE);
 	endFrame();
 }
 void InvadersGame::updatePause()
@@ -306,17 +309,7 @@ void InvadersGame::stateInput(int key, int action)
 			game_state = GameState::PAUSE;
 		}
 	}
-	/*else if (action == ASGE::KEYS::KEY_PRESS&& game_state == GameState::WIN_SCREEN)
-	{
-		if (key == ASGE::KEYS::KEY_ESCAPE)
-		{
-			game_action = GameAction::EXIT;
-		}
-		if (key == ASGE::KEYS::KEY_ENTER)
-		{
-			game_state = GameState::RESET;
-		}
-	}*/
+	
 	processGameActions();
 }
 /**
@@ -396,10 +389,13 @@ void InvadersGame::input(int key, int action)
 	{
 		if (key == ASGE::KEYS::KEY_SPACE)
 		{
-			if (!playerPt->GetHasShot())
+			if (game_state == GameState::PLAYING)
 			{
-				playerPt->SetHasShot(true);
-				bulletPt->setBulletFierd(true);
+				if (!playerPt->GetHasShot())
+				{
+					playerPt->SetHasShot(true);
+					bulletPt->setBulletFierd(true);
+				}
 			}
 		}
 	}

@@ -19,7 +19,6 @@ private:
 	float Ypos;
 	float Width;
 	float Height;
-	//bool isAlive;
 	std::vector<bool>deadBarriers;
 	std::vector<int>health;
 	std::unique_ptr<ASGE::Sprite> Barriers;

@@ -1,6 +1,6 @@
 #pragma once
 #include "Player.h"
-class Bullet : public Player
+class Bullet 
 {
 public:
 	float GetBulletY();
