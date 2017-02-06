@@ -8,6 +8,7 @@
 #include"EnemyBullet .h"
 #include"Barrier.h"
 #include"CollisionDetction.h"
+#include"mothership.h"
 
 #include <Engine/Input.h>
 #include <Engine/Keys.h>
@@ -80,6 +81,9 @@ bool InvadersGame::init()
 	barrierPt = std::make_unique<Barrier>();
 	barrierPt->init(renderer);
 
+	MotherShipPt = std::make_unique<MotherShip>();
+	MotherShipPt->init(renderer);
+
 	colisionPt = std::make_unique<CollisionDetction>();
 
 	state_callback_id = this->inputs->addCallbackFnc(&InvadersGame::stateInput, this);
@@ -139,6 +143,7 @@ void InvadersGame::updateGame()
 	render();
 
 	enemyPt->Move();
+	MotherShipPt->MoveShip();
 
 	if (playerPt->GetHasShot())
 	{
@@ -169,7 +174,7 @@ void InvadersGame::updateGame()
 				{
 					playerPt->SetHasShot(false);
 					enemyPt->killSprite(i);
-					score +=10;
+   					score =enemyPt->Getvalue(i);
 				}
 			}
 		}
@@ -235,11 +240,15 @@ void InvadersGame::updateGame()
 }
 void InvadersGame::updateGameOver()
 {
+	scoreString = std::to_string(score);
+	scoreChar = scoreString.c_str();
 	beginFrame();
 	renderer->setFont(GameFont::fonts[0]->id);
 	renderer->renderText("GAME OVER", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText("PRESS ENTER TO PLAY AGAIN", 375, 425, 0.5, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText("PRESS ESC TO QUIT", 375, 525, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("SCORE", 375, 425, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText(scoreChar, 475, 425, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("PRESS ENTER TO PLAY AGAIN", 375, 480, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("PRESS ESC TO QUIT", 375, 540, 0.5, ASGE::COLOURS::DARKORANGE);
 	endFrame();
 }
 void InvadersGame::updateWin_Screen()
@@ -250,9 +259,10 @@ void InvadersGame::updateWin_Screen()
 	renderer->setFont(GameFont::fonts[0]->id);
 	renderer->renderText("YOU WIN", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
 	renderer->renderText("SCORE", 375, 425, 0.5, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText(scoreChar, 400, 425, 0.5, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText("PRESS ENTER TO PLAY AGAIN", 475, 425, 0.5, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText("PRESS ESC TO QUIT", 575, 525, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText(scoreChar, 475, 425, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("PRESS ENTER TO PLAY AGAIN", 375, 480, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("PRESS ESC TO QUIT", 375, 540, 0.5, ASGE::COLOURS::DARKORANGE);
+	endFrame();
 	endFrame();
 }
 void InvadersGame::updatePause()
@@ -348,6 +358,7 @@ void InvadersGame::drawFrame()
 	enemyPt->Render(renderer);
 	playerPt->Render(renderer);
 	barrierPt->Render(renderer);
+	MotherShipPt->Render(renderer);
 	if (Spawned)
 	{
 		enemybulletPt->Render(renderer);

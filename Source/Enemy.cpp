@@ -15,6 +15,7 @@ Enemy::Enemy(Enemy&&rhs)
 }
 Enemy::Enemy()
 {
+	EnemyVal.resize(55);
 	Deadsprite.resize(55);
 	MovingRight = true;
 	speed = 1;
@@ -24,29 +25,49 @@ Enemy::Enemy()
 bool Enemy::init(std::shared_ptr<ASGE::Renderer> renderer)
 {
 	Enemys.resize(55);
-	
 
-	float x = 120;
-	float y = 80;
-	for (auto& enemy : Enemys)
+	for (int i = 0; i < 55; i++)
 	{
 	
-		enemy = renderer->createSprite();
-		enemy->position[0] = x;
-		enemy->position[1] = y;
+		Enemys[i] = renderer->createSprite();
+		Enemys[i]->position[0] = x;
+		Enemys[i]->position[1] = y;
+		if (Enemys[i]->position[1] == 80)
+		{
+			sprite = "..\\..\\Resources\\Textures\\spaceInvaders40.jpg";
+			EnemyVal[i] = val;
+		}
+		else if (y == 150||y==220)
+		{
+			sprite = "..\\..\\Resources\\Textures\\spaceInvaders.PNG";
+			EnemyVal[i] = val-10;
+		}
+		
+		else if (y == 290 || y == 360)
+		{
+		  sprite = "..\\..\\Resources\\Textures\\spaceInvaders10.jpg";
+		  EnemyVal[i] = val-20;
+		}
 		x += 70;
 		if (x == 890)
 		{
 			y += 70;
 			x = 120;
 		}
-		if (!enemy->loadTexture("..\\..\\Resources\\Textures\\Invader.jpg"))
+		
+		if (!Enemys[i]->loadTexture(sprite))
 		{
 			return false;
 		}
 	}
 	return true;
 }
+
+int Enemy::Getvalue(int i)
+{
+	return EnemyVal[i];
+}
+
 float Enemy::GetXpostion(int i)
 {
 	Xpos = Enemys[i]->position[0];

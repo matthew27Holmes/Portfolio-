@@ -37,6 +37,9 @@
     <ClCompile Include="..\..\Source\Barrier.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\mothership.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
@@ -81,6 +84,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Barrier.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\mothership.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

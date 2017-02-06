@@ -8,6 +8,7 @@ class Bullet;
 class EnemyBullet;
 class  Barrier;
 class CollisionDetction;
+class MotherShip;
 struct GameFont;
 
 enum class GameState
@@ -68,6 +69,7 @@ private:
 	std::unique_ptr<EnemyBullet> enemybulletPt;
 	std::unique_ptr<Barrier> barrierPt;
 	std::unique_ptr<CollisionDetction> colisionPt;
+	std::unique_ptr<MotherShip> MotherShipPt;
 	GameState game_state = GameState::MAIN_MENU;
 
 	
