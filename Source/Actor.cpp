@@ -8,7 +8,7 @@
 
 bool Actor::hasSpriteHitLeftWall(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite)
 {
-	if(ActorSprite[i]->position[0]==0)
+	if(ActorSprite[i]->position[0]<=0)
 	{
 		return true;
 	}
@@ -19,7 +19,7 @@ bool Actor::hasSpriteHitLeftWall(int i, std::vector<std::unique_ptr<ASGE::Sprite
 }
 bool Actor::hasSpriteHitRightWall(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite)
 {
-	if (ActorSprite[i]->position[0] == WINDOW_WIDTH - 100)
+	if (ActorSprite[i]->position[0] >= WINDOW_WIDTH - 100)
 	{
 		return true;
 	}
@@ -28,13 +28,13 @@ bool Actor::hasSpriteHitRightWall(int i, std::vector<std::unique_ptr<ASGE::Sprit
 		return false;
 	}
 }
-void Actor::MoveRight(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite, int speed)
+void Actor::MoveRight(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite, int speed, float dt)
 {
-	ActorSprite[i]->position[0] += speed;
+	ActorSprite[i]->position[0] += speed *dt;
 }
-void Actor::MoveLeft(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite, int speed)
+void Actor::MoveLeft(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite, int speed, float dt)
 {
-	ActorSprite[i]->position[0] -= speed;
+	ActorSprite[i]->position[0] -= speed * dt;
 }
 
 

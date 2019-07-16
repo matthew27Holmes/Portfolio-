@@ -1,6 +1,8 @@
 #pragma once
 #include <Engine/OGLGame.h>
 #include <string>
+#include<time.h>
+#include <chrono>
 
 class Player;
 class Enemy;
@@ -43,10 +45,10 @@ public:
 	//state machine 
 	void updateGame();
 	void updateMenue();
-	void updateGameOver();
+	void updateGameEndScreen();
 	void updatePause();
 	void updateReset();
-	void updateWin_Screen();
+	//void updateWin_Screen();
 	void stateInput(int key, int action);
 private:
 	void processGameActions(); 
@@ -71,6 +73,8 @@ private:
 	std::unique_ptr<CollisionDetction> colisionPt;
 	std::unique_ptr<MotherShip> MotherShipPt;
 	GameState game_state = GameState::MAIN_MENU;
+
+	float deltaTime;
 
 	
 };

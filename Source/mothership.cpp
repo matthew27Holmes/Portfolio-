@@ -13,19 +13,16 @@ bool MotherShip::setRandomSide()
 	if (spawnNumber < 0.5)
 	{
 		movingRight = true;
-		Xpos = -100;
+		Xpos = -110;
 		return true;
 	}
 	else
 	{
 		movingRight = false;
-		Xpos = WINDOW_WIDTH;
+		Xpos = WINDOW_WIDTH +10;
 		return true;
 	}
-	/*else
-	{
-		return false;
-	}*/
+
 }
 bool MotherShip::init(std::shared_ptr<ASGE::Renderer> renderer)
 {
@@ -48,11 +45,11 @@ void MotherShip::setSpawnded(bool hasbeenSpawnded)
 }
 bool MotherShip::hasHitWall()
 {
-	if (Mship->position[0] == -100)
+	if (Mship->position[0] == -110)
 	{
 		return true;
 	}
-	else if(Mship->position[0] == WINDOW_WIDTH)
+	else if(Mship->position[0] == WINDOW_WIDTH+10)
 	{
 		return false;
 	}
@@ -69,11 +66,11 @@ void MotherShip::MoveShip()
 	}
 	if (movingRight)
 	{
-		Mship->position[0] += 5;
+		Mship->position[0] += 2;
 	}
 	if (!movingRight)
 	{
-		Mship->position[0] -= 5;
+		Mship->position[0] -= 2;
 	}
 	
 }

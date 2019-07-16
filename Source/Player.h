@@ -8,8 +8,8 @@ public:
 	virtual bool init(std::shared_ptr<ASGE::Renderer> renderer);
 
 	void Render(std::shared_ptr<ASGE::Renderer> renderer);
-	void moveLeft();
-	void moveRight();
+	void moveLeft(float dt);
+	void moveRight(float dt);
 	virtual float GetXpostion(int i);
 	virtual float GetYpostion(int i);
 	float GetWidth(int i);

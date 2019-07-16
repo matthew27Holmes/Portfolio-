@@ -14,9 +14,9 @@ public:
 	float Gethight(int i);
 	int Getvalue(int i);
 	void Render(std::shared_ptr<ASGE::Renderer> renderer);
-	void Move();
+	void Move(float dt);
 
-	void MoveDown();
+	void MoveDown(float dt);
 	bool GetDeadSprites(int i);
 	void reset();
 	bool areAllSpritesDead();

@@ -15,7 +15,7 @@ Player::Player(Player&&rhs)
 Player::Player()
 {
 	deadTanks.resize(4);
-	speed = 5;
+	speed = 100;
 	lives = 3;
 	isAlive = true;
 }
@@ -52,18 +52,18 @@ bool Player::init(std::shared_ptr<ASGE::Renderer> renderer)
 	return true;
 }
 
-void Player:: moveLeft()
+void Player:: moveLeft(float dt)
 {
 	if (!hasSpriteHitLeftWall(0,Tank))
 	{
-		MoveLeft(0,Tank ,speed);
+		MoveLeft(0,Tank ,speed,dt);
 	}
 }
-void Player::moveRight()
+void Player::moveRight(float dt)
 {
 	if (!hasSpriteHitRightWall(0,Tank))
 	{
-		MoveRight(0,Tank ,speed);
+		MoveRight(0,Tank ,speed,dt);
 	}
 }
 bool Player::GetHasShot()

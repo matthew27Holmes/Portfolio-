@@ -15,17 +15,16 @@ Enemy::Enemy(Enemy&&rhs)
 }
 Enemy::Enemy()
 {
+	Enemys.resize(55);
 	EnemyVal.resize(55);
 	Deadsprite.resize(55);
 	MovingRight = true;
-	speed = 1;
+	speed = 20;
 	howManyEnemiesKilled = 0;
 }
 
 bool Enemy::init(std::shared_ptr<ASGE::Renderer> renderer)
 {
-	Enemys.resize(55);
-
 	for (int i = 0; i < 55; i++)
 	{
 	
@@ -60,6 +59,9 @@ bool Enemy::init(std::shared_ptr<ASGE::Renderer> renderer)
 			return false;
 		}
 	}
+	HasEnemyWon = false;
+	howManyEnemiesKilled = 0;
+	score = 0;
 	return true;
 }
 
@@ -99,7 +101,7 @@ void Enemy::Render(std::shared_ptr<ASGE::Renderer> renderer)
 	}
 }
 
-void Enemy::Move()
+void Enemy::Move(float dt)
 {
 	for (int i = 0; i < 55; i++)
 	{	
@@ -107,28 +109,28 @@ void Enemy::Move()
 		if (hasSpriteHitLeftWall(i, Enemys))
 		{
 			MovingRight = true;
-			MoveDown();
+			MoveDown(dt);
 		}
 		else if (hasSpriteHitRightWall(i, Enemys))
 		{
 			MovingRight = false;
-			MoveDown();
+			MoveDown(dt);
 		}
 		if (MovingRight)
 		{
-			MoveRight(i, Enemys, speed);
+			MoveRight(i, Enemys, speed,dt);
 		}
 		if (!MovingRight)
 		{
-			MoveLeft(i,Enemys, speed);
+			MoveLeft(i,Enemys, speed,dt);
 		}
 	}
 }
-void Enemy::MoveDown()
+void Enemy::MoveDown(float dt)
 {
 	for (int i = 0; i < 55; i++)
 	{
-		Enemys[i]->position[1] = GetYpostion(i) + 10;
+		Enemys[i]->position[1] = GetYpostion(i) + 5;
 	}
 }
 
@@ -176,9 +178,8 @@ void Enemy::reset()
 	{
 		Deadsprite[i] = false;
 	}
-	HasEnemyWon = false;
-	howManyEnemiesKilled = 0;
-	score= 0;
+	x = 120;
+	y = 80;
 }
 void Enemy::setEnemyWin(bool hasWon)
 {

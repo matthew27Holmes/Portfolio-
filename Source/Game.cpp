@@ -103,29 +103,26 @@ bool InvadersGame::run()
 {
 	while (!shouldExit())
 	{
-		if (game_state == GameState::MAIN_MENU)
+		switch (game_state)
 		{
+		case GameState::MAIN_MENU:
 			updateMenue();
-		}
-		else if (game_state == GameState::PLAYING)
-		{
+			break;
+		case GameState::PLAYING:
 			updateGame();
-		}
-		else if (game_state == GameState::GAME_OVER)
-		{
-			updateGameOver();
-		}
-		else if (game_state == GameState::PAUSE)
-		{
+			break;
+		case GameState::GAME_OVER:
+		case GameState::WIN_SCREEN:
+			updateGameEndScreen();
+			break;
+		case GameState::PAUSE:
 			updatePause();
-		}
-		else if(game_state==GameState::RESET)
-		{
+			break;
+		case GameState::RESET:
 			updateReset();
-		}
-		else if(game_state==GameState::WIN_SCREEN)
-		{
-			updateWin_Screen();
+				break;
+		default:
+			break;
 		}
 	}
 	return true;
@@ -139,10 +136,13 @@ void InvadersGame::updateMenue()
 }
 void InvadersGame::updateGame()
 {
+	std::chrono::high_resolution_clock timer;
+	auto start = timer.now();
+
 	processGameActions();
 	render();
 
-	enemyPt->Move();
+	enemyPt->Move(deltaTime);
 	MotherShipPt->MoveShip();
 
 	if (playerPt->GetHasShot())
@@ -236,35 +236,32 @@ void InvadersGame::updateGame()
 	{
 		game_state = GameState::WIN_SCREEN;
 	}
+	auto stop = timer.now();
+	using ms = std::chrono::duration<float, std::milli>;
+	deltaTime = std::chrono::duration_cast<ms>(stop - start).count() / 100;
+}
+void InvadersGame::updateGameEndScreen()
+{
+	scoreString = std::to_string(score);
+	scoreChar = scoreString.c_str();
+	beginFrame();
+	renderer->setFont(GameFont::fonts[0]->id);
+	if (game_state == GameState::WIN_SCREEN)
+	{
+		renderer->renderText("YOU WIN", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
+	}
+	else
+	{
+		renderer->renderText("GAME OVER", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
+	}
 
-}
-void InvadersGame::updateGameOver()
-{
-	scoreString = std::to_string(score);
-	scoreChar = scoreString.c_str();
-	beginFrame();
-	renderer->setFont(GameFont::fonts[0]->id);
-	renderer->renderText("GAME OVER", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
 	renderer->renderText("SCORE", 375, 425, 0.5, ASGE::COLOURS::DARKORANGE);
 	renderer->renderText(scoreChar, 475, 425, 0.5, ASGE::COLOURS::DARKORANGE);
 	renderer->renderText("PRESS ENTER TO PLAY AGAIN", 375, 480, 0.5, ASGE::COLOURS::DARKORANGE);
 	renderer->renderText("PRESS ESC TO QUIT", 375, 540, 0.5, ASGE::COLOURS::DARKORANGE);
 	endFrame();
 }
-void InvadersGame::updateWin_Screen()
-{
-	scoreString = std::to_string(score);
-	scoreChar = scoreString.c_str();
-	beginFrame();
-	renderer->setFont(GameFont::fonts[0]->id);
-	renderer->renderText("YOU WIN", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText("SCORE", 375, 425, 0.5, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText(scoreChar, 475, 425, 0.5, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText("PRESS ENTER TO PLAY AGAIN", 375, 480, 0.5, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText("PRESS ESC TO QUIT", 375, 540, 0.5, ASGE::COLOURS::DARKORANGE);
-	endFrame();
-	endFrame();
-}
+
 void InvadersGame::updatePause()
 {
 	beginFrame();
@@ -274,8 +271,8 @@ void InvadersGame::updatePause()
 }
 void InvadersGame::updateReset()
 {
-	enemyPt->init(renderer);
 	enemyPt->reset();
+	enemyPt->init(renderer);
 	playerPt->reset();
 	playerPt->init(renderer);
 	barrierPt->init(renderer);
@@ -390,11 +387,11 @@ void InvadersGame::input(int key, int action)
 	}
 	if (key == ASGE::KEYS::KEY_D)
 	{
-		playerPt->moveRight();
+		playerPt->moveRight(deltaTime);
 	}
 	if (key == ASGE::KEYS::KEY_A)
 	{
-		playerPt->moveLeft();
+		playerPt->moveLeft(deltaTime);
 	}
 	if (action == ASGE::KEYS::KEY_PRESS)
 	{
