@@ -2,19 +2,13 @@
 #include "Actions.h"
 #include "Constants.h"
 #include "GameFont.h"
-#include"Player.h"
-#include"Enemy.h"
-#include "Bullet.h"
-#include"EnemyBullet .h"
-#include"Barrier.h"
+#include "Player.h"
+#include "EnemyController.h"
+
+#include"BarrierManager.h"
 #include"CollisionDetction.h"
 #include"mothership.h"
 
-#include <Engine/Input.h>
-#include <Engine/Keys.h>
-#include <Engine/Sprite.h>
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
 
 /**
 *   @brief   Default Constructor.
@@ -22,8 +16,7 @@
 InvadersGame::InvadersGame()
 {
 	score = 0;
-	srand(time(NULL));
-
+	srand((int)time(NULL));
 }
 
 
@@ -62,29 +55,27 @@ bool InvadersGame::init()
 	
 	// load fonts we need
 	GameFont::fonts[0] = new GameFont(
-		renderer->loadFont("..\\..\\Resources\\Fonts\\Comic.ttf", 42), "default", 42);
+		renderer->loadFont("..\\..\\Resources\\Fonts\\Comic.ttf", 42), "default", 50);
 	
 	if (GameFont::fonts[0]->id == -1)
 	{
 		return false;
-	}	
+	}
 
-	enemyPt = std::make_unique<Enemy>();
-	enemyPt->init(renderer);
+	//object list 
+	std::vector<Actor*> objs;
+	objs.reserve(116);
 
-	playerPt = std::make_unique<Player>();
-	playerPt->init(renderer);
+	enemyControlPt = std::make_unique<EnemyController>(renderer);
+	enemyControlPt->addToObjList(objs);
 
-	bulletPt = std::make_unique<Bullet>();
-	enemybulletPt = std::make_unique<EnemyBullet>();
+	playerPt = std::make_unique<Player>(renderer);
+	playerPt->addToObjList(objs);
 
-	barrierPt = std::make_unique<Barrier>();
-	barrierPt->init(renderer);
+	barrierPt = std::make_unique<BarrierManager>(renderer);
+	barrierPt->addToObjList(objs);
 
-	MotherShipPt = std::make_unique<MotherShip>();
-	MotherShipPt->init(renderer);
-
-	colisionPt = std::make_unique<CollisionDetction>();
+	colisionPt = std::make_unique<CollisionDetction>(objs);
 
 	state_callback_id = this->inputs->addCallbackFnc(&InvadersGame::stateInput, this);
 
@@ -108,6 +99,7 @@ bool InvadersGame::run()
 		case GameState::MAIN_MENU:
 			updateMenue();
 			break;
+		case GameState::PAUSE:
 		case GameState::PLAYING:
 			updateGame();
 			break;
@@ -115,9 +107,9 @@ bool InvadersGame::run()
 		case GameState::WIN_SCREEN:
 			updateGameEndScreen();
 			break;
-		case GameState::PAUSE:
-			updatePause();
-			break;
+		//case GameState::PAUSE:
+		//	updatePause();
+		//	break;
 		case GameState::RESET:
 			updateReset();
 				break;
@@ -127,13 +119,15 @@ bool InvadersGame::run()
 	}
 	return true;
 }
+
 void InvadersGame::updateMenue()
 {
 	beginFrame();
 	renderer->setFont(GameFont::fonts[0]->id);
-	renderer->renderText("SPACE INVADERS\n PRESS ENTER TO START", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("SPACE INVADERS\nPRESS ENTER TO START", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
 	endFrame();
 }
+
 void InvadersGame::updateGame()
 {
 	std::chrono::high_resolution_clock timer;
@@ -141,147 +135,69 @@ void InvadersGame::updateGame()
 
 	processGameActions();
 	render();
+	if (game_state != GameState::PAUSE)
+	{
+		playerPt->Tick(deltaTime);
+		enemyControlPt->Tick(deltaTime);
+		barrierPt->Tick(deltaTime);
 
-	enemyPt->Move(deltaTime);
-	MotherShipPt->MoveShip();
+		colisionPt->Tick();
 
-	if (playerPt->GetHasShot())
-	{
-		if (bulletPt->getBulletFierd())
+		if (enemyControlPt->getHasEnemyWon() || !playerPt->getIsAlive())//this might not be right dont think it handles lives 
 		{
-			bulletPt->shoot(renderer, playerPt->GetXpostion(0));
+			game_state = GameState::GAME_OVER;
+			score = enemyControlPt->getScore();
 		}
-		bulletPt->MoveBullet();
-		if (!bulletPt->deleteBullet())
+		else if (enemyControlPt->areAllSpritesDead())
 		{
-			playerPt->SetHasShot(false);
-		}
-		for (int i = 0; i < 3; i++)
-		{
-			if (barrierPt->getHealth(i) > 0 && colisionPt->hasThereBeenACollision(barrierPt->GetBarrierX(i), barrierPt->GetBarrierY(i), barrierPt->Gethight(i), barrierPt->GetWidth(i)
-				, bulletPt->GetBulletX(), bulletPt->GetBulletY(), bulletPt->Gethight(), bulletPt->GetWidth()))
-			{
-				playerPt->SetHasShot(false);
-				barrierPt->TakeDamge(i);
-			}
-		}
-		for (int i = 0; i < 55; i++)
-		{
-			if (!enemyPt->GetDeadSprites(i))
-			{
-				if (colisionPt->hasThereBeenACollision(enemyPt->GetXpostion(i), enemyPt->GetYpostion(i), enemyPt->Gethight(i), enemyPt->GetWidth(i)
-					, bulletPt->GetBulletX(), bulletPt->GetBulletY(), bulletPt->Gethight(), bulletPt->GetWidth()))
-				{
-					playerPt->SetHasShot(false);
-					enemyPt->killSprite(i);
-   					score =enemyPt->Getvalue(i);
-				}
-			}
+			game_state = GameState::WIN_SCREEN;
+			score = enemyControlPt->getScore();
 		}
 	}
-	if (!Spawned)
-	{
-		ran = rand() % 55 + 0;
-		float spawnNumber = (float)rand() / (float)RAND_MAX;
-		if (spawnNumber < 0.05)
-		{
-			enemybulletPt->setBulletFierd(true);
-			enemybulletPt->shoot(renderer, enemyPt->GetXpostion(ran), enemyPt->GetYpostion(ran));
-			Spawned = true;
-		}
-	}
-	if (Spawned)
-	{
-	for (int i = 0; i < 3; i++)
-	{
-		if (barrierPt->getHealth(i)>0 && colisionPt->hasThereBeenACollision(barrierPt->GetBarrierX(i), barrierPt->GetBarrierY(i), barrierPt->Gethight(i), barrierPt->GetWidth(i)
-			, enemybulletPt->GetEnemyBulletX(), enemybulletPt->GetEnemyBulletY(), enemybulletPt->Gethight(), enemybulletPt->GetWidth()))
-		{
-			enemybulletPt->setBulletFierd(false);
-			Spawned = false;
-			barrierPt->TakeDamge(i);
-		}
-	}
-		
-		if (enemybulletPt->getBulletFierd())
-		{
-			enemybulletPt->MoveBullet();// move out of for loop
-			if (!enemybulletPt->deleteBullet())
-			{
-				enemybulletPt->setBulletFierd(false);
-				Spawned = false;
-			}
-			if (playerPt->getIsAlive())
-			{
-				if (colisionPt->hasThereBeenACollision(playerPt->GetXpostion(0), playerPt->GetYpostion(0), playerPt->Gethight(0), playerPt->GetWidth(0)
-					, enemybulletPt->GetEnemyBulletX(), enemybulletPt->GetEnemyBulletY(), enemybulletPt->Gethight(), enemybulletPt->GetWidth()))
-				{
-					enemybulletPt->setBulletFierd(false);
-					Spawned = false;
-					if (playerPt->playerHit() <= 0)
-					{
-						enemyPt->setEnemyWin(true);
-					}
-				}
-			}
-		}
-	}
-	enemyPt->hasEnemyhasWon();
-	
-	if (enemyPt->getHasEnemyWon())
-	{
-		game_state = GameState::GAME_OVER;
-	}
-	else if (enemyPt->areAllSpritesDead())
-	{
-		game_state = GameState::WIN_SCREEN;
-	}
+
 	auto stop = timer.now();
 	using ms = std::chrono::duration<float, std::milli>;
 	deltaTime = std::chrono::duration_cast<ms>(stop - start).count() / 100;
 }
+
 void InvadersGame::updateGameEndScreen()
 {
-	scoreString = std::to_string(score);
-	scoreChar = scoreString.c_str();
 	beginFrame();
 	renderer->setFont(GameFont::fonts[0]->id);
 	if (game_state == GameState::WIN_SCREEN)
 	{
-		renderer->renderText("YOU WIN", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
+		renderer->renderText("YOU WIN", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4, 1.0, ASGE::COLOURS::DARKORANGE);
 	}
 	else
 	{
-		renderer->renderText("GAME OVER", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
+		renderer->renderText("GAME OVER", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4, 1.0, ASGE::COLOURS::DARKORANGE);
 	}
-
-	renderer->renderText("SCORE", 375, 425, 0.5, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText(scoreChar, 475, 425, 0.5, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText("PRESS ENTER TO PLAY AGAIN", 375, 480, 0.5, ASGE::COLOURS::DARKORANGE);
-	renderer->renderText("PRESS ESC TO QUIT", 375, 540, 0.5, ASGE::COLOURS::DARKORANGE);
+	std::string scoreTxt = "SCORE  ";
+	scoreTxt += std::to_string(score);
+	scoreChar = scoreTxt.c_str();
+	renderer->renderText(scoreChar, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4+50, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("PRESS ENTER TO PLAY AGAIN", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 70, 0.5, ASGE::COLOURS::DARKORANGE);
+	renderer->renderText("PRESS ESC TO QUIT", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 90, 0.5, ASGE::COLOURS::DARKORANGE);
 	endFrame();
 }
 
-void InvadersGame::updatePause()
-{
-	beginFrame();
-	renderer->setFont(GameFont::fonts[0]->id);
-	renderer->renderText("GAME PAUSED", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
-	endFrame();
-}
+//void InvadersGame::updatePause()
+//{
+//	beginFrame();
+//	renderer->setFont(GameFont::fonts[0]->id);
+//	renderer->renderText("GAME PAUSED", 375, 325, 1.0, ASGE::COLOURS::DARKORANGE);
+//	endFrame();
+//}
+
 void InvadersGame::updateReset()
 {
-	enemyPt->reset();
-	enemyPt->init(renderer);
-	playerPt->reset();
-	playerPt->init(renderer);
-	barrierPt->init(renderer);
+	playerPt->reset(enemyControlPt->areAllSpritesDead());
+	enemyControlPt->reset();
 	barrierPt->Reset();
-	playerPt->SetHasShot(false);
-	bulletPt->setBulletFierd(false);
-	game_state = GameState::PLAYING;
 
+	game_state = GameState::PLAYING;
 }
+
 void InvadersGame::stateInput(int key, int action)
 {
 	if (action == ASGE::KEYS::KEY_PRESS&& game_state == GameState::MAIN_MENU)
@@ -291,7 +207,7 @@ void InvadersGame::stateInput(int key, int action)
 			game_state = GameState::PLAYING;
 		}
 	}
-	else if (action == ASGE::KEYS::KEY_PRESS&& game_state == GameState::PAUSE)
+	else if (action == ASGE::KEYS::KEY_PRESS && game_state == GameState::PAUSE)
 	{
 		if (key == ASGE::KEYS::KEY_P)
 		{
@@ -319,23 +235,12 @@ void InvadersGame::stateInput(int key, int action)
 	
 	processGameActions();
 }
-/**
-*   @brief   Should the game exit?
-*   @details Has the renderer terminated or the game requesting to exit?
-*   @return  True if the game should exit
-*/
+
 bool InvadersGame::shouldExit() const
 {
 	return (renderer->exit() || this->exit && game_action != GameAction::EXIT);
 }
 
-/**
-*   @brief   Renders the scene
-*   @details Prepares the renderer subsystem before drawing the 
-			 current frame. Once the current frame is has finished
-			 the buffers are swapped accordingly and the image shown.
-*   @return  void
-*/
 void InvadersGame::render()
 {
 	beginFrame();
@@ -343,26 +248,16 @@ void InvadersGame::render()
 	endFrame();
 }
 
-/**
-*   @brief   Renderers the contents for this frame 
-*   @details All game objects that need rendering should be done
-			 in this function, as it ensures they are completed
-			 before the buffers are swapped.
-*   @return  void
-*/
 void InvadersGame::drawFrame()
 {
-	enemyPt->Render(renderer);
 	playerPt->Render(renderer);
 	barrierPt->Render(renderer);
-	MotherShipPt->Render(renderer);
-	if (Spawned)
+	enemyControlPt->Render(renderer);
+	if (game_state == GameState::PAUSE)
 	{
-		enemybulletPt->Render(renderer);
-	}
-	if (playerPt->GetHasShot()==true)
-	{
-		bulletPt->Render(renderer);
+		renderer->setFont(GameFont::fonts[0]->id);
+		renderer->renderText("GAME PAUSED", WINDOW_WIDTH/2, WINDOW_HEIGHT/4 , 1.0, ASGE::COLOURS::DARKORANGE);
+		renderer->renderText("Press P To Continue", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 50, 0.5, ASGE::COLOURS::DARKORANGE);
 	}
 }
 
@@ -385,25 +280,24 @@ void InvadersGame::input(int key, int action)
 			game_action = GameAction::EXIT;
 		}
 	}
+
 	if (key == ASGE::KEYS::KEY_D)
 	{
-		playerPt->moveRight(deltaTime);
+		playerPt->MoveHorizontally(deltaTime,1);
 	}
+
 	if (key == ASGE::KEYS::KEY_A)
 	{
-		playerPt->moveLeft(deltaTime);
+		playerPt->MoveHorizontally(deltaTime, -1);
 	}
+
 	if (action == ASGE::KEYS::KEY_PRESS)
 	{
 		if (key == ASGE::KEYS::KEY_SPACE)
 		{
 			if (game_state == GameState::PLAYING)
 			{
-				if (!playerPt->GetHasShot())
-				{
-					playerPt->SetHasShot(true);
-					bulletPt->setBulletFierd(true);
-				}
+				playerPt->Shoot();
 			}
 		}
 	}

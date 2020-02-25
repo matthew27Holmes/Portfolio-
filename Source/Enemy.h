@@ -1,48 +1,28 @@
 #pragma once
 #include "Actor.h"
-#include <string>
-class Enemy :public Actor
+#include "Bullet.h"
+class EnemyController;
+
+class Enemy : public Actor
 {
 public:
-	Enemy();
-	Enemy(Enemy&&rhs);
-	bool init(std::shared_ptr<ASGE::Renderer> renderer);
+	Enemy(int val, bool canFire, Vector2 pos, std::shared_ptr<ASGE::Renderer> renderer);
+	//Enemy(Enemy&&rhs);
 
-	virtual float GetXpostion(int i);
-	virtual float GetYpostion(int i);
-	float GetWidth(int i);
-	float Gethight(int i);
-	int Getvalue(int i);
-	void Render(std::shared_ptr<ASGE::Renderer> renderer);
-	void Move(float dt);
+	void Tick(float dt) override;
+	void Render(std::shared_ptr<ASGE::Renderer> renderer) override;
+	void handleCollisons(ObjTags tag) override;
+	void addToObjList(std::vector<Actor*>&obj) override;
 
-	void MoveDown(float dt);
-	bool GetDeadSprites(int i);
-	void reset();
-	bool areAllSpritesDead();
-	bool hasEnemyhasWon();
-	bool getHasEnemyWon();
-	void killSprite(int i);
-	void setEnemyWin(bool hasWon);
+	void enemyFire();
+	void setCanFire(bool canFire);
+	int Getvalue();
+	void reset(Vector2 pos,bool fireEnabled);
 
 private:
-	std::unique_ptr<ASGE::Sprite> Invaders;
-	std::vector<std::unique_ptr<ASGE::Sprite>>Enemys;
-	std::vector<int>EnemyVal;
-	std::vector<bool>Deadsprite;
-	float Xpos;
-	float Ypos;
-	float Width;
-	float Height;
-	float x = 120;
-	float y = 80;
-	int val = 40;
+	std::unique_ptr<Bullet> enemybulletPt;
 
-	int speed;
-	int howManyEnemiesKilled;
-	int score;
-	char* sprite;
-
-	bool MovingRight;
-	bool HasEnemyWon;
+	bool EnemeyFired;
+	bool canEnemyFire;
+	int value;
 };

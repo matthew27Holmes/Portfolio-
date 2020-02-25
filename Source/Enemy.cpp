@@ -1,187 +1,90 @@
-
 #include"Enemy.h"
-//#include "Actor.h"
 #include <Engine/Input.h>
 #include <Engine/Keys.h>
 
-Enemy::Enemy(Enemy&&rhs)
+Enemy::Enemy(int val,bool canFire,Vector2 pos, std::shared_ptr<ASGE::Renderer> renderer)
+	: Actor(renderer), EnemeyFired(false),value(val),canEnemyFire(canFire)
 {
-	Enemys.reserve(55);
-	for (int i = 0; i < Enemys.size(); i++)
-	{
-		Enemys.push_back(std::move(Invaders));
-	}
-	
-}
-Enemy::Enemy()
-{
-	Enemys.resize(55);
-	EnemyVal.resize(55);
-	Deadsprite.resize(55);
-	MovingRight = true;
-	speed = 20;
-	howManyEnemiesKilled = 0;
+	speed = 5;
+	Pos = pos;
+	Size = { 50,50 };
+	setTag(ObjTags::Emy);
+	enemybulletPt = std::make_unique<Bullet>(renderer);
+	enemybulletPt->setTag(ObjTags::EmyBull);
 }
 
-bool Enemy::init(std::shared_ptr<ASGE::Renderer> renderer)
+void Enemy::addToObjList(std::vector<Actor*>&obj)
 {
-	for (int i = 0; i < 55; i++)
+	obj.emplace_back(this);
+	enemybulletPt->addToObjList(obj);
+}
+
+void Enemy::Tick(float dt)
+{
+	Actor::Tick(dt);
+	if (EnemeyFired)// should move fire control to indiviual eneimes as oppsed to controler 
 	{
-	
-		Enemys[i] = renderer->createSprite();
-		Enemys[i]->position[0] = x;
-		Enemys[i]->position[1] = y;
-		if (Enemys[i]->position[1] == 80)
+		enemybulletPt->Tick(dt);// when enemy dies bullets tick stops being called 
+		enemybulletPt->MoveBullet(1, dt);
+		if (enemybulletPt->getPos().y >= WINDOW_HEIGHT)//out of bounds 
 		{
-			sprite = "..\\..\\Resources\\Textures\\spaceInvaders40.jpg";
-			EnemyVal[i] = val;
+			enemybulletPt->setAlive(false);
 		}
-		else if (y == 150||y==220)
+
+		if (!enemybulletPt->getAlive())
 		{
-			sprite = "..\\..\\Resources\\Textures\\spaceInvaders.PNG";
-			EnemyVal[i] = val-10;
-		}
-		
-		else if (y == 290 || y == 360)
-		{
-		  sprite = "..\\..\\Resources\\Textures\\spaceInvaders10.jpg";
-		  EnemyVal[i] = val-20;
-		}
-		x += 70;
-		if (x == 890)
-		{
-			y += 70;
-			x = 120;
-		}
-		
-		if (!Enemys[i]->loadTexture(sprite))
-		{
-			return false;
+			EnemeyFired = false;
 		}
 	}
-	HasEnemyWon = false;
-	howManyEnemiesKilled = 0;
-	score = 0;
-	return true;
+	else if(canEnemyFire && alive)
+	{
+		enemyFire();
+	}
 }
 
-int Enemy::Getvalue(int i)
-{
-	return EnemyVal[i];
-}
-
-float Enemy::GetXpostion(int i)
-{
-	Xpos = Enemys[i]->position[0];
-	return Xpos;
-}
-float Enemy::GetYpostion(int i)
-{
-	Ypos = Enemys[i]->position[1];
-	return Ypos;
-}
-float Enemy::GetWidth(int i)
-{
-	Width = Enemys[i]->size[0];
-	return Width;
-}
-float Enemy::Gethight(int i)
-{
-	Height = Enemys[i]->size[1];
-	return Height;
-}
 void Enemy::Render(std::shared_ptr<ASGE::Renderer> renderer)
 {
-	for (int i=0; i < 55; i++)
+	Actor::Render(renderer);
+	if (EnemeyFired)
 	{
-		if (!Deadsprite[i])
-		{
-			Enemys[i]->render(renderer);
-		}
+		enemybulletPt->Render(renderer);
 	}
 }
 
-void Enemy::Move(float dt)
+void Enemy::handleCollisons(ObjTags tag)
 {
-	for (int i = 0; i < 55; i++)
-	{	
-		
-		if (hasSpriteHitLeftWall(i, Enemys))
-		{
-			MovingRight = true;
-			MoveDown(dt);
-		}
-		else if (hasSpriteHitRightWall(i, Enemys))
-		{
-			MovingRight = false;
-			MoveDown(dt);
-		}
-		if (MovingRight)
-		{
-			MoveRight(i, Enemys, speed,dt);
-		}
-		if (!MovingRight)
-		{
-			MoveLeft(i,Enemys, speed,dt);
-		}
-	}
-}
-void Enemy::MoveDown(float dt)
-{
-	for (int i = 0; i < 55; i++)
+	if (tag == Bull)
 	{
-		Enemys[i]->position[1] = GetYpostion(i) + 5;
+		killSprite();
 	}
 }
 
-bool Enemy::hasEnemyhasWon()
+void Enemy::enemyFire()// should only fire if you are at the front 
 {
-	for (int i=0; i < 55; i++)
+	int ran = rand() % 55 + 0;
+	float spawnNumber = (float)rand() / (float)RAND_MAX;
+	if (spawnNumber < 0.001)
 	{
-		if (!Deadsprite[i])
-		{
-			if (Enemys[i]->position[1] >= 560)
-			{
-				HasEnemyWon = true;
-			}
-		}
-	}
-	return HasEnemyWon;
-}
-bool Enemy::getHasEnemyWon()
-{
-	return HasEnemyWon;
-}
-void Enemy::killSprite(int i)
-{
-	Deadsprite[i] = true;
-	howManyEnemiesKilled++;	
-}
-bool Enemy::areAllSpritesDead()
-{
-	if (howManyEnemiesKilled == 55)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
+		enemybulletPt->shoot(Pos, { 0,0 });
+		EnemeyFired = true;
 	}
 }
-bool Enemy::GetDeadSprites(int i)
+
+void Enemy::setCanFire(bool canFire)
 {
-	return Deadsprite[i];
+	canEnemyFire = canFire;
 }
-void Enemy::reset()
+
+int Enemy::Getvalue()
 {
-	for (int i = 0; i < Deadsprite.size(); i++)
-	{
-		Deadsprite[i] = false;
-	}
-	x = 120;
-	y = 80;
+	return value;
 }
-void Enemy::setEnemyWin(bool hasWon)
+
+void Enemy::reset(Vector2 pos, bool fireEnabled)
 {
-	HasEnemyWon = hasWon;
+	Pos = pos;
+	canEnemyFire = fireEnabled;
+	enemybulletPt->Reset();
+	alive = true;
 }
+

@@ -3,22 +3,30 @@
 #include "Constants.h"
 
 
-class Actor: 
-	public GameObject
+class Actor : public GameObject
 {
 public:
-	Actor()=default;
-	~Actor()=default;
-	
-	bool hasSpriteHitRightWall(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite);
-	bool hasSpriteHitLeftWall(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite);
-	void MoveRight(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite, int speed, float dt);
-	void MoveLeft(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite, int speed, float dt);
+	Actor(std::shared_ptr<ASGE::Renderer> renderer);
 
-	/*void killSprite(int i, std::unique_ptr<ASGE::Sprite> ActorSprite[55]);*/
-	//virtual float GetXpostion(int i);
-	//virtual float GetYpostion(int i);
-private:
+	virtual void addToObjList(std::vector<Actor*>& obj);
+	bool LoadSprite(char* spriteName);
+	virtual void Render(std::shared_ptr<ASGE::Renderer> renderer);
+	~Actor() = default;
+	virtual void Tick(float dt);
+	virtual void handleCollisons(ObjTags tag) { return; };
+
+
+	bool hasSpriteHitRightWall();
+	bool hasSpriteHitLeftWall();
+	virtual void MoveHorizontally(float dt,float velocity);
+
+	int getSpeed() { return speed; };
+	void setSpeed(int sp) { speed = sp; };
+
+	void killSprite();
+protected:
 	int speed;
+	std::unique_ptr<ASGE::Sprite> Sprite;
+
 };
 

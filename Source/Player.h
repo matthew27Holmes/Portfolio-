@@ -1,39 +1,33 @@
 #pragma once
 #include "Actor.h"
+#include "Bullet.h"
+
 class Player : public Actor
 {
 public:
-	Player();
-	Player(Player&&rhs);
-	virtual bool init(std::shared_ptr<ASGE::Renderer> renderer);
 
-	void Render(std::shared_ptr<ASGE::Renderer> renderer);
-	void moveLeft(float dt);
-	void moveRight(float dt);
-	virtual float GetXpostion(int i);
-	virtual float GetYpostion(int i);
-	float GetWidth(int i);
-	float Gethight(int i);
-	bool GetHasShot();
-	bool SetHasShot(bool i);
+	Player(std::shared_ptr<ASGE::Renderer> renderer);
+	//Player(Player&&rhs);
+
+	void Tick(float dt)override;
+	void Render(std::shared_ptr<ASGE::Renderer> renderer) override;
+	void handleCollisons(ObjTags tag) override;
+	void addToObjList(std::vector<Actor*>&obj)override;
+
+	void MoveHorizontally(float dt, float velocity) override;
+
+	void Shoot();
+
 	int playerHit();
-	bool GetDeadSprites(int i);
 	bool getIsAlive();
-	void reset();
+	void reset(bool PlayerWon);
 private:
-	bool hasShot = false;	// when hits something becomes false
-	bool isAlive;
-	int speed;
-
+	//bool hasShot = false;	// when hits something becomes false
 	int lives;
-	float Xpos;
-	float Ypos;
-	float Width;
-	float Height;
-	
-
-	std::unique_ptr<ASGE::Sprite> player;
-	std::vector<std::unique_ptr<ASGE::Sprite>>Tank;
-	std::unique_ptr<ASGE::Sprite>DeadTankSprite;
-	std::vector<bool>deadTanks;
+	Vector2 Thrust;
+	Vector2 drag;
+	//std::unique_ptr<Bullet> bullet;// should use object pool
+	int bulletPoolSize = 30;
+	std::unique_ptr<Bullet> bulletPool[30];
+	std::vector<std::unique_ptr<ASGE::Sprite>> LivesCounter;
 };

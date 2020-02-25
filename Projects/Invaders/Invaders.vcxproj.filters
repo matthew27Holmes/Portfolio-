@@ -40,6 +40,12 @@
     <ClCompile Include="..\..\Source\mothership.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\EnemyController.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\BarrierManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
@@ -89,5 +95,21 @@
     <ClInclude Include="..\..\Source\mothership.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\..\Source\Vector2Util.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\EnemyController.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\BarrierManager.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\ObjectTagUtil.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Invaders.rc" />
   </ItemGroup>
 </Project>

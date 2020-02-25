@@ -3,62 +3,51 @@
 #include <Engine/Input.h>
 #include <Engine/Keys.h>
 
-bool Bullet::shoot(std::shared_ptr<ASGE::Renderer> renderer,float xops)
+Bullet::Bullet(std::shared_ptr<ASGE::Renderer> renderer)
+	:Actor(renderer)
 {
-	Bullets = renderer->createSprite();
-	Bullets->position[0] = xops+23.5;
-	Bullets->position[1] = 600;
-	if (!Bullets->loadTexture("..\\..\\Resources\\Textures\\TankBullet.jpg"))
+	Pos = { 10,600 };
+	speed = 20;
+	Size = { 3,12 };
+	setTag(ObjTags::Bull);
+	if (!LoadSprite("..\\..\\Resources\\Textures\\TankBullet.jpg"))
 	{
-		return false;
+		std::cout << "error loading bullet";
+		return;
 	}
-	bulletFired = false;
-}
-bool Bullet::getBulletFierd()
-{
-	return bulletFired;
-}
-void Bullet::setBulletFierd(bool hasBulletBeenFierd)
-{
-	bulletFired = hasBulletBeenFierd;
-}
-void Bullet::MoveBullet()
-{
-	Bullets->position[1] = GetBulletY() - 5;
-}
-bool Bullet::deleteBullet()
-{
-	if (Bullets->position[1] == 0)
-	{
-		return false;
-	}
-	else
-	{
-		return true;
-	}
-}
-float Bullet::GetWidth()
-{
-	Width = Bullets->size[0];
-	return Width;
-}
-float Bullet::Gethight()
-{
-	Height = Bullets->size[1];
-	return Height;
-}
-float Bullet::GetBulletY()
-{
-	Ypos = Bullets->position[1];
-	return Ypos;
-}
-float Bullet::GetBulletX()
-{
-	Xpos = Bullets->position[0];
-	return Xpos;
+	alive = false;
 }
 
-void Bullet::Render(std::shared_ptr<ASGE::Renderer> renderer)
+void Bullet::handleCollisons(ObjTags tag)
 {
-	Bullets->render(renderer);
+	if ( tag == ObjTags::Barr || (Tag == ObjTags::EmyBull && (tag == ObjTags::Ply))
+		|| (Tag == ObjTags::Bull && (tag == ObjTags::Emy)) )
+	{
+		killBullet();
+	}
+}
+
+void Bullet::shoot(Vector2 pos, Vector2 offset)
+{
+	alive = true;
+	//hitTarget = false;
+	Pos = pos + offset;
+}
+
+void Bullet::MoveBullet(float velocity, float deltaTime)
+{
+	Pos.y += (velocity* speed)  * deltaTime;
+}
+
+void Bullet::killBullet()
+{
+	//turn off this bullet 
+	//let parent no its gone 
+	killSprite();
+}
+
+void Bullet::Reset()
+{
+	alive = false;
+	Pos = { 10,600 };
 }

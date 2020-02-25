@@ -1,13 +1,18 @@
 #pragma once
 #include "Constants.h"
+#include "Actor.h"
 #include <Engine/Sprite.h>
 
 class CollisionDetction 
 {
 public:
-	CollisionDetction()=default;
+	CollisionDetction(std::vector<Actor*>& obj);
 	~CollisionDetction()=default;
-	bool hasThereBeenACollision( float AX, float AY, float AHeight, float AWidth, float BX, float BY, float BHeight, float BWidth);
-private:
 
+	void Tick();
+	bool hasThereBeenACollision(Actor* A, Actor* B);
+
+private:
+	int distanceThreshold = 100;
+	std::vector<Actor*> gameObjs;
 };

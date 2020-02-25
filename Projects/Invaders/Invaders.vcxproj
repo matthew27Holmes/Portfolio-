@@ -46,6 +46,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)..\Libs\ASGE\Include;$(SolutionDir)..\Source;$(IncludePath)..\Inaders;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -93,10 +94,12 @@
     <ClCompile Include="..\..\Source\Actions.cpp" />
     <ClCompile Include="..\..\Source\Actor.cpp" />
     <ClCompile Include="..\..\Source\Barrier.cpp" />
+    <ClCompile Include="..\..\Source\BarrierManager.cpp" />
     <ClCompile Include="..\..\Source\Bullet.cpp" />
     <ClCompile Include="..\..\Source\CollisionDetction.cpp" />
     <ClCompile Include="..\..\Source\Enemy.cpp" />
     <ClCompile Include="..\..\Source\EnemyBullet .cpp" />
+    <ClCompile Include="..\..\Source\EnemyController.cpp" />
     <ClCompile Include="..\..\Source\GameFont.cpp" />
     <ClCompile Include="..\..\Source\GameObject.cpp" />
     <ClCompile Include="..\..\Source\main.cpp" />
@@ -105,19 +108,27 @@
     <ClInclude Include="..\..\Source\Actions.h" />
     <ClInclude Include="..\..\Source\Actor.h" />
     <ClInclude Include="..\..\Source\Barrier.h" />
+    <ClInclude Include="..\..\Source\BarrierManager.h" />
     <ClInclude Include="..\..\Source\Bullet.h" />
     <ClInclude Include="..\..\Source\CollisionDetction.h" />
     <ClInclude Include="..\..\Source\Constants.h" />
     <ClInclude Include="..\..\Source\Enemy.h" />
     <ClInclude Include="..\..\Source\EnemyBullet .h" />
+    <ClInclude Include="..\..\Source\EnemyController.h" />
     <ClInclude Include="..\..\Source\Game.h" />
     <ClInclude Include="..\..\Source\GameFont.h" />
     <ClInclude Include="..\..\Source\GameObject.h" />
     <ClInclude Include="..\..\Source\mothership.h" />
+    <ClInclude Include="..\..\Source\ObjectTagUtil.h" />
     <ClInclude Include="..\..\Source\Player.h" />
+    <ClInclude Include="..\..\Source\Vector2Util.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\Game.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Invaders.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

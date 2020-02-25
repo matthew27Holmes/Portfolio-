@@ -1,14 +1,20 @@
 #pragma once
 #include <Engine/OGLGame.h>
-#include <string>
-#include<time.h>
+#include <Engine/Input.h>
+#include <Engine/Keys.h>
+#include <Engine/Sprite.h>
+
+#include <iostream>
+#include <stdlib.h>     /* srand, rand */
 #include <chrono>
+#include <time.h>       /* time */
+#include <string>
+#include "Vector2Util.h"
+#include "ObjectTagUtil.h"
 
 class Player;
-class Enemy;
-class Bullet;
-class EnemyBullet;
-class  Barrier;
+class EnemyController;
+class BarrierManager;
 class CollisionDetction;
 class MotherShip;
 struct GameFont;
@@ -66,16 +72,14 @@ private:
 
 	//pointers to GameObjects
 	std::unique_ptr<Player> playerPt; 
-	std::unique_ptr<Enemy> enemyPt;
-	std::unique_ptr<Bullet> bulletPt;
-	std::unique_ptr<EnemyBullet> enemybulletPt;
-	std::unique_ptr<Barrier> barrierPt;
+	std::unique_ptr<EnemyController> enemyControlPt;
+	std::unique_ptr<BarrierManager> barrierPt;
 	std::unique_ptr<CollisionDetction> colisionPt;
-	std::unique_ptr<MotherShip> MotherShipPt;
 	GameState game_state = GameState::MAIN_MENU;
 
+	//should create list of all in game objects so each object can control thier own collison detecion
+	//with in there own class
 	float deltaTime;
-
 	
 };
 

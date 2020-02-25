@@ -1,14 +1,55 @@
 #include"Actor.h"
-#include "Constants.h"
+//#include "Constants.h"
 
-#include<vector>
-#include <Engine/Input.h>
-#include <Engine/Keys.h>
-#include <Engine/Sprite.h>
+//#include<vector>
+//#include <Engine/Input.h>
+//#include <Engine/Keys.h>
+//#include <Engine/Sprite.h>
 
-bool Actor::hasSpriteHitLeftWall(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite)
+Actor::Actor(std::shared_ptr<ASGE::Renderer> renderer)
 {
-	if(ActorSprite[i]->position[0]<=0)
+	Sprite = renderer->createSprite();
+	alive = true;
+	setTag(ObjTags::Act);
+}
+
+void Actor::addToObjList(std::vector<Actor*>& obj)
+{
+	obj.emplace_back(this);
+}
+
+bool Actor::LoadSprite(char * spriteName)
+{
+	if (!Sprite->loadTexture(spriteName))
+	{
+		std::cout << "error loading sprite " << spriteName <<std::endl;
+		return false;
+	}
+	return true;
+}
+
+void Actor::Tick(float dt)
+{
+	if (alive)
+	{
+		Sprite->position[0] = Pos.x;
+		Sprite->position[1] = Pos.y;
+		Sprite->size[0] = Size.x;
+		Sprite->size[1] = Size.y;
+	}
+}
+
+void Actor::Render(std::shared_ptr<ASGE::Renderer> renderer)
+{
+	if (alive)
+	{
+		Sprite->render(renderer);
+	}
+}
+
+bool Actor::hasSpriteHitLeftWall()
+{
+	if(Pos.x <= 0)
 	{
 		return true;
 	}
@@ -17,9 +58,10 @@ bool Actor::hasSpriteHitLeftWall(int i, std::vector<std::unique_ptr<ASGE::Sprite
 		return false;
 	}
 }
-bool Actor::hasSpriteHitRightWall(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite)
+
+bool Actor::hasSpriteHitRightWall()
 {
-	if (ActorSprite[i]->position[0] >= WINDOW_WIDTH - 100)
+	if (Pos.x >= WINDOW_WIDTH - 50)
 	{
 		return true;
 	}
@@ -28,28 +70,15 @@ bool Actor::hasSpriteHitRightWall(int i, std::vector<std::unique_ptr<ASGE::Sprit
 		return false;
 	}
 }
-void Actor::MoveRight(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite, int speed, float dt)
+
+void Actor::MoveHorizontally(float dt, float velocity)
 {
-	ActorSprite[i]->position[0] += speed *dt;
-}
-void Actor::MoveLeft(int i, std::vector<std::unique_ptr<ASGE::Sprite>>& ActorSprite, int speed, float dt)
-{
-	ActorSprite[i]->position[0] -= speed * dt;
+	Pos.x += (velocity*speed)*dt;
 }
 
-
-
-//void Actor::killSprite(int i)
-//{
-//	ActorSprite[i] = nullptr;
-//}
-//float Actor::GetXpostion(int i)
-//{
-//	Xpos = Bullet->position[0];
-//	return Xpos;
-//}
-//float Actor::GetYpostion(int i)
-//{
-//	Ypos = Bullet->position[1];
-//	return Ypos;
-//}
+void Actor::killSprite()
+{
+	alive = false;
+	//Sprite.reset();
+	//Sprite = nullptr;
+}

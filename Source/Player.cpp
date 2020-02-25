@@ -3,139 +3,168 @@
 #include <Engine/Keys.h>
 #include <Engine/Sprite.h>
 
-Player::Player(Player&&rhs)
-{
-	Tank.reserve(10);
-	for (int i = 0; i < Tank.size(); i++)
-	{
-		Tank.push_back(std::move(player));
-	}
+//Player::Player(Player&&rhs)
+//{
+//	LivesCounter.reserve(10);
+//	for (int i = 0; i < LivesCounter.size(); i++)
+//	{
+//		LivesCounter.push_back(std::move(Sprite));
+//	}
+//}
 
-}
-Player::Player()
+Player::Player(std::shared_ptr<ASGE::Renderer> renderer) 
+	: Actor(renderer) , lives(3) //,bullet(std::make_unique<Bullet>(renderer))
 {
-	deadTanks.resize(4);
-	speed = 100;
-	lives = 3;
-	isAlive = true;
-}
-bool Player::init(std::shared_ptr<ASGE::Renderer> renderer)
-{
-	Tank.resize(4);
-	int x = 100;
-	
-	for (int i = 0; i < Tank.size(); i++)
+	speed = 200;
+	Pos = { WINDOW_WIDTH/2,WINDOW_HEIGHT - 200 };
+	Size = { 50,50 };
+	LoadSprite("..\\..\\Resources\\Textures\\Space-invadersShip.jpg");
+	setTag(ObjTags::Ply);
+
+	//set up lives counter 
+	LivesCounter.resize(lives);
+	int x = WINDOW_WIDTH / 10;
+	for (int i = 0; i < (int)LivesCounter.size(); i++)
 	{
-		Tank[i] = renderer->createSprite();
-		if (i == 0)
+		LivesCounter[i] = renderer->createSprite();
+		LivesCounter[i]->position[0] = (float)x;
+		LivesCounter[i]->position[1] = WINDOW_HEIGHT - 150.0f;
+		x += 90;
+		if (!LivesCounter[i]->loadTexture("..\\..\\Resources\\Textures\\Space-invadersShip.jpg"))
 		{
-			Tank[0]->position[0] = 500;
-			Tank[0]->position[1] = 600;
+			std::cout << "failed to load Lives counter Texture";
+			return;
 		}
-		else
-		{
-			Tank[i]->position[0] = x;
-			Tank[i]->position[1] = 650;
-			x += 90;
-		}
-		if (!Tank[i]->loadTexture("..\\..\\Resources\\Textures\\Space-invadersShip.jpg"))
-		{
-			return false;
-		}
-
-		Tank[i]->size[0] = 50;
-		Tank[i]->size[1] = 50;
+		LivesCounter[i]->size[0] = 50;
+		LivesCounter[i]->size[1] = 50;
 	}
-	DeadTankSprite = renderer->createSprite();
-	DeadTankSprite->position[0] = GetXpostion(0);
-	DeadTankSprite->position[1] = GetYpostion(0);
-	return true;
-}
 
-void Player:: moveLeft(float dt)
-{
-	if (!hasSpriteHitLeftWall(0,Tank))
+	//set up bullet pool 
+	for (int i = 0; i < bulletPoolSize; i++)
 	{
-		MoveLeft(0,Tank ,speed,dt);
+		bulletPool[i] = std::make_unique<Bullet>(renderer);
 	}
 }
-void Player::moveRight(float dt)
+
+void Player::addToObjList(std::vector<Actor*>&obj)
 {
-	if (!hasSpriteHitRightWall(0,Tank))
+	obj.emplace_back(this);
+	for (int i = 0; i < bulletPoolSize; i++)
 	{
-		MoveRight(0,Tank ,speed,dt);
+		bulletPool[i]->addToObjList(obj);
 	}
 }
-bool Player::GetHasShot()
-{
-	return hasShot;
-}
 
-bool Player::SetHasShot(bool i)
+void Player::Tick(float dt)
 {
-	hasShot = i;
-	return hasShot;
-}
-void Player::Render(std::shared_ptr<ASGE::Renderer> renderer)
-{
-	for (int i = 0; i < 4; i++)
+	Player::Actor::Tick(dt);
+	for (int i = 0; i < bulletPoolSize; i++)
 	{
-		if (isAlive)
+		if (bulletPool[i]->getAlive())
 		{
-			if (!deadTanks[i])
+			bulletPool[i]->Tick(dt);
+			bulletPool[i]->MoveBullet(-1, dt);
+			if (bulletPool[i]->getPos().y <= 0)
 			{
-				Tank[i]->render(renderer);
+ 				bulletPool[i]->setAlive(false);
 			}
 		}
-		else
-		{
-			DeadTankSprite->render(renderer);
-			isAlive = true;
-		}
 	}
 }
 
-float Player::GetXpostion(int i)
+void Player::Render(std::shared_ptr<ASGE::Renderer> renderer)
 {
-	Xpos = Tank[i]->position[0];
-	return Xpos;
+	//bullet
+	for (int i = 0; i < bulletPoolSize; i++)
+	{
+		if (bulletPool[i]->getAlive())
+		{
+			bulletPool[i]->Render(renderer);
+		}
+	}
+
+	//lives 
+	for (int i = 0; i < lives; i++)
+	{
+		//if (alive)
+		//{
+			LivesCounter[i]->render(renderer);
+		//}
+		//else
+		//{
+			//alive = true;
+		//}
+	}
+	// render self 
+	Actor::Render(renderer);
 }
-float Player::GetYpostion(int i)
+
+void Player::handleCollisons(ObjTags tag)
 {
-	Ypos = Tank[i]->position[1];
-	return Ypos;
+	if (tag == ObjTags::EmyBull)
+	{
+		playerHit();
+	}
 }
-float Player::GetWidth(int i)
+
+void Player::MoveHorizontally(float dt, float velocity)
 {
-	Width = Tank[i]->size[0];
-	return Width;
+	if ((velocity > 0 && !hasSpriteHitRightWall()) || (velocity < 0 && !hasSpriteHitLeftWall()))
+	{
+		Actor::MoveHorizontally(dt, velocity);
+	}
 }
-float Player::Gethight(int i)
+
+void Player::Shoot()
 {
-	Height = Tank[i]->size[1];
-	return Height;
+	//search list for deactive bullet 
+	//fire first deactive bullet 
+	for (int i = 0; i < bulletPoolSize; i++)
+	{
+		if (!bulletPool[i]->getAlive())
+		{
+			bulletPool[i]->shoot(Pos, { 23.5f,0.0f });
+			// set timer between bullets
+			return;
+		}
+	}
+	// if no bullets deactive // kill first bullet 
+	bulletPool[0]->killBullet();
+	bulletPool[0]->shoot(Pos, { 23.5f,0.0f });
+	// set timer between bullets
 }
+
 int Player::playerHit()
 {
 	lives--;
-	deadTanks[lives+1] = true;
-	isAlive = false;
+	//reset postion 
+	Pos = { WINDOW_WIDTH / 2,WINDOW_HEIGHT - 200 };
+	if (lives <= 0)
+	{
+		alive = false;
+	}
+	//reset postion 
+	Pos = { WINDOW_WIDTH / 2,WINDOW_HEIGHT - 200 };
 	return lives;
 }
 bool Player::getIsAlive()
 {
-	return isAlive;
+	return alive;
 }
-bool Player::GetDeadSprites(int i)
+
+void Player::reset(bool PlayerWon)
 {
-	return deadTanks[i];
-}
-void Player::reset()
-{
-	lives = 3;
-	isAlive = true;
-	for (int i = 0; i < deadTanks.size(); i++)
+	if (!PlayerWon)
 	{
-		deadTanks[i] = false;
+		lives = 3;
 	}
+	Pos = { WINDOW_WIDTH / 2,WINDOW_HEIGHT - 200 };
+
+	//set up bullet pool 
+	for (int i = 0; i < bulletPoolSize; i++)
+	{
+		bulletPool[i]->Reset();
+	}
+
+	alive = true;
 }

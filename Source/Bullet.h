@@ -1,26 +1,14 @@
 #pragma once
-#include "Player.h"
-class Bullet 
+#include"Actor.h"
+
+class Bullet : public Actor
 {
 public:
-	float GetBulletY();
-	float GetBulletX();
-	float GetWidth();
-	float Gethight();
-	virtual void Render(std::shared_ptr<ASGE::Renderer> renderer);
+	Bullet(std::shared_ptr<ASGE::Renderer> renderer);
+	void handleCollisons(ObjTags tag) override;
 
-	bool shoot(std::shared_ptr<ASGE::Renderer> renderer,float xops);
-	void MoveBullet();
-	bool getBulletFierd();
-	void setBulletFierd(bool hasBulletBeenFierd);
-	bool deleteBullet();
-private:
-	float Xpos;
-	float Ypos;
-	float Width;
-	float Height;
-
-	bool bulletFired;
-	std::unique_ptr<ASGE::Sprite> Bullets;
-
+	void shoot(Vector2 pos, Vector2 offset);
+	void MoveBullet(float velocity,float delatTime);
+	void killBullet();
+	void Reset();
 };

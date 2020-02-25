@@ -2,10 +2,10 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include"Enemy.h"
-class MotherShip:Enemy 
+class MotherShip //: Enemy 
 {
 public:
-	MotherShip();
+	/*MotherShip(int i, Vector2 pos, std::shared_ptr<ASGE::Renderer> renderer);
 	float GetshipY();
 	float GetshipX();
 	float GetWidth();
@@ -26,6 +26,6 @@ private:
 	float Height;
 	bool movingRight;
 	bool Spawnded;
-	std::unique_ptr<ASGE::Sprite> Mship;
+	std::unique_ptr<ASGE::Sprite> Mship;*/
 
 };
